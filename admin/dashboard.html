@@ -396,41 +396,216 @@
       gap: var(--space-2);
     }
 
+    /* ── COURSE ACCORDION CARDS (expandable per-course stats) ── */
     .enrollment-stats {
       display: flex;
-      gap: var(--space-4);
-      flex-wrap: wrap;
+      flex-direction: column;
+      gap: var(--space-3);
       margin-bottom: var(--space-5);
     }
 
-    .stat-card {
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-md);
-      padding: var(--space-4) var(--space-5);
-      min-width: 140px;
-      flex: 1;
+    .course-card {
+      background: #ffffff;
+      border: 1px solid #e2e6f0;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      transition: box-shadow 0.25s ease;
+      overflow: hidden;
     }
 
-    .stat-card-title {
+    .course-card-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-4) var(--space-5);
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s ease;
+    }
+
+    .course-card-header:hover {
+      background: #f8faff;
+    }
+
+    .course-card-header.open {
+      border-bottom: 1px solid #e2e6f0;
+    }
+
+    .course-card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .course-card-icon.course-0 { background: #eff6ff; }
+    .course-card-icon.course-1 { background: #f0faf4; }
+    .course-card-icon.course-2 { background: #faf5ff; }
+    .course-card-icon.course-3 { background: #fffbeb; }
+    .course-card-icon.course-4 { background: #ecfeff; }
+    .course-card-icon.course-5 { background: #fef2f2; }
+    .course-card-icon.course-6 { background: #f5f3ff; }
+    .course-card-icon.course-7 { background: #f0fdf4; }
+
+    .course-card-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .course-card-title {
+      font-size: var(--text-sm);
+      font-weight: var(--weight-bold);
+      color: var(--color-ink);
+    }
+
+    .course-card-meta {
+      font-size: var(--text-xs);
+      color: var(--color-ink-muted);
+      margin-top: 1px;
+    }
+
+    .course-card-stat {
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .course-card-stat-value {
+      font-size: var(--text-lg);
+      font-weight: var(--weight-bold);
+      color: var(--color-ink);
+      line-height: 1.2;
+    }
+
+    .course-card-stat-label {
+      font-size: 10px;
+      color: var(--color-ink-muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .course-card-chevron {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      color: #9ca3af;
+      transition: transform 0.3s ease;
+    }
+
+    .course-card-chevron.open {
+      transform: rotate(180deg);
+    }
+
+    .course-card-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.35s ease;
+      padding: 0 var(--space-5);
+    }
+
+    .course-card-body.open {
+      max-height: 2000px;
+      padding: var(--space-4) var(--space-5) var(--space-5);
+    }
+
+    .course-detail-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--text-sm);
+    }
+
+    .course-detail-table th {
+      text-align: left;
+      font-size: 10px;
+      font-weight: var(--weight-bold);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--color-ink-muted);
+      padding: var(--space-2) var(--space-3);
+      border-bottom: 1px solid #e2e6f0;
+    }
+
+    .course-detail-table td {
+      padding: var(--space-2) var(--space-3);
+      color: var(--color-ink);
+      border-bottom: 1px solid #f4f6fb;
+    }
+
+    .course-detail-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .course-detail-progress {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .course-detail-progress-bar {
+      width: 60px;
+      height: 6px;
+      background: #e2e6f0;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .course-detail-progress-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: var(--color-primary);
+      transition: width 0.4s ease;
+    }
+
+    .course-detail-progress-fill.complete { background: var(--color-success); }
+    .course-detail-progress-fill.started { background: var(--color-warning); }
+
+    .course-detail-empty {
+      text-align: center;
+      padding: var(--space-6);
+      color: var(--color-ink-muted);
+      font-size: var(--text-sm);
+    }
+
+    .total-stat-card {
+      background: #ffffff;
+      border: 1px solid #e2e6f0;
+      border-radius: 10px;
+      padding: var(--space-4) var(--space-5);
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      margin-bottom: var(--space-2);
+    }
+
+    .total-stat-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    }
+
+    .total-stat-info { flex: 1; }
+    .total-stat-title {
       font-size: var(--text-xs);
       font-weight: var(--weight-bold);
       letter-spacing: 0.06em;
       text-transform: uppercase;
       color: var(--color-ink-muted);
-      margin-bottom: var(--space-1);
     }
-
-    .stat-card-value {
-      font-size: var(--text-xl);
+    .total-stat-value {
+      font-size: var(--text-lg);
       font-weight: var(--weight-bold);
       color: var(--color-ink);
-    }
-
-    .stat-card-sub {
-      font-size: var(--text-xs);
-      color: var(--color-ink-muted);
-      margin-top: var(--space-1);
+      line-height: 1.3;
     }
 
     /* ── ANALYTICS STATS GRID ── */
@@ -441,12 +616,60 @@
       margin-bottom: var(--space-6);
     }
 
+    /* ── CHROME STAT CARDS (main dial) ── */
+    .stats-grid {
+      position: relative;
+    }
+
     .stats-card {
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-md);
-      padding: var(--space-5);
+      background: #ffffff;
+      border: 1px solid #e2e6f0;
+      border-radius: 10px;
+      padding: var(--space-5) var(--space-5) var(--space-4);
       text-align: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .stats-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      border-radius: 10px 10px 0 0;
+    }
+
+    .stats-card:nth-child(1)::before { background: linear-gradient(90deg, #2563eb, #60a5fa); }
+    .stats-card:nth-child(2)::before { background: linear-gradient(90deg, #16a34a, #86efac); }
+    .stats-card:nth-child(3)::before { background: linear-gradient(90deg, #7c3aed, #c084fc); }
+    .stats-card:nth-child(4)::before { background: linear-gradient(90deg, #d97706, #fbbf24); }
+    .stats-card:nth-child(5)::before { background: linear-gradient(90deg, #0891b2, #5eead4); }
+
+    .stats-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+    }
+
+    .stats-card-value {
+      font-size: var(--text-2xl);
+      font-weight: var(--weight-bold);
+      color: var(--color-ink);
+      line-height: 1.2;
+      position: relative;
+    }
+
+    .stats-card-label {
+      font-size: var(--text-xs);
+      font-weight: var(--weight-bold);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--color-ink-muted);
+      margin-top: var(--space-1);
+      position: relative;
     }
 
     .stats-card-value {
@@ -908,7 +1131,18 @@
           <div class="stats-card-label">Active (7 Days)</div>
         </div>
       </div>
-      <div id="enrollment-stats" class="enrollment-stats"></div>
+      <!-- ── TOTAL STUDENT BAR (between main dial and course cards) ── -->
+      <div id="total-student-bar" class="total-stat-card">
+        <div class="total-stat-icon">👥</div>
+        <div class="total-stat-info">
+          <div class="total-stat-title">Total Students</div>
+          <div class="total-stat-value" id="total-students-value">—</div>
+        </div>
+        <div class="total-stat-info" style="text-align:right;">
+          <div class="total-stat-title">Total Enrollments</div>
+          <div class="total-stat-value" id="total-enrollments-value">—</div>
+        </div>
+      </div>
     </div>
 
     <!-- ── CONTROLS BAR: COURSE FILTER + ADD STUDENT ── -->
@@ -1019,6 +1253,9 @@
         </table>
       </div>
     </div>
+
+    <!-- ── COURSE ACCORDION CARDS (below student table) ── -->
+    <div id="enrollment-stats" class="enrollment-stats"></div>
 
     <!-- ── SETTINGS TAB ── -->
     <div id="tab-settings" class="tab-content">
@@ -1696,6 +1933,8 @@
         _cachedProgress = allProgress;
         _cachedEnrollments = allEnrollments;
         _cachedCourses = allCourses;
+        document.getElementById('total-students-value').textContent = students.length;
+        document.getElementById('total-enrollments-value').textContent = allEnrollments.length;
         populateCourseFilter(allCourses);
         updateEnrollmentStats(allEnrollments, allCourses);
         loadStats(students, allProgress);
@@ -1736,6 +1975,8 @@
         _cachedProgress = allProgress;
         _cachedEnrollments = allEnrollments;
         _cachedCourses = allCourses;
+        document.getElementById('total-students-value').textContent = students.length;
+        document.getElementById('total-enrollments-value').textContent = allEnrollments.length;
         populateCourseFilter(allCourses);
         updateEnrollmentStats(allEnrollments, allCourses);
         loadStats(students, allProgress);
@@ -1936,30 +2177,30 @@
       });
     }
 
+    /** Currently expanded course card (null = none) */
+    var _expandedCourse = null;
+
     /**
      * updateEnrollmentStats(enrollments, courses)
-     * Renders mini stat cards showing total students and per-course enrollment counts.
+     * Renders a total-student row + per-course accordion cards.
+     * Clicking a course card expands/collapses a detail panel with enrolled students.
      *
      * @param {Array} enrollments - All enrollment records.
      * @param {Array} courses - All course definitions.
      */
     function updateEnrollmentStats(enrollments, courses) {
       var container = document.getElementById('enrollment-stats');
-      var selectedCourse = _selectedCourseId();
       var html = '';
 
-      // Total students stats
-      var totalStudents = _cachedStudents.length;
-      var totalEnrollments = enrollments.length;
-      html += '<div class="stat-card">' +
-        '<div class="stat-card-title">Total Students</div>' +
-        '<div class="stat-card-value">' + totalStudents + '</div>' +
-        '<div class="stat-card-sub">' + totalEnrollments + ' total enrollments</div>' +
-      '</div>';
+      // ── Per-course accordion cards ──
+      var courseColors = ['📘','📗','📙','📕','💠','🔶','🔷','📒'];
+      var courseBgs = ['course-0','course-1','course-2','course-3','course-4','course-5','course-6','course-7'];
 
-      // Per-course stats
-      courses.forEach(function(course) {
-        var isSelected = selectedCourse === course.courseId;
+      courses.forEach(function(course, idx) {
+        var iconIdx = idx % courseColors.length;
+        var isOpen = _expandedCourse === course.courseId;
+
+        var active, completed, totalInCourse;
 
         // For legacy QA Onboarding, count students with legacy progress OR explicit enrollment
         if (course.courseId === 'qa-onboarding') {
@@ -1972,34 +2213,116 @@
               p.certificateAwarded
             );
           }).length;
-
-          // Merge — use the larger of the two (avoid double-counting)
-          var totalInCourse = Math.max(
-            explicitEnrollments.length,
-            legacyCount
-          );
-
-          var explicitActive = explicitEnrollments.filter(function(e) { return e.status === 'active'; }).length;
-          var explicitCompleted = explicitEnrollments.filter(function(e) { return e.status === 'completed'; }).length;
-
-          html += '<div class="stat-card" style="' + (isSelected ? 'border-color:var(--color-primary);background:var(--color-bg);' : '') + '">' +
-            '<div class="stat-card-title">' + escapeHtml(course.title) + '</div>' +
-            '<div class="stat-card-value">' + totalInCourse + '</div>' +
-            '<div class="stat-card-sub">' + explicitActive + ' active · ' + explicitCompleted + ' completed</div>' +
-          '</div>';
+          totalInCourse = Math.max(explicitEnrollments.length, legacyCount);
+          active = explicitEnrollments.filter(function(e) { return e.status === 'active'; }).length;
+          completed = explicitEnrollments.filter(function(e) { return e.status === 'completed'; }).length;
         } else {
           var courseEnrollments = enrollments.filter(function(e) { return e.courseId === course.courseId; });
-          var active = courseEnrollments.filter(function(e) { return e.status === 'active'; }).length;
-          var completed = courseEnrollments.filter(function(e) { return e.status === 'completed'; }).length;
-          html += '<div class="stat-card" style="' + (isSelected ? 'border-color:var(--color-primary);background:var(--color-bg);' : '') + '">' +
-            '<div class="stat-card-title">' + escapeHtml(course.title) + '</div>' +
-            '<div class="stat-card-value">' + courseEnrollments.length + '</div>' +
-            '<div class="stat-card-sub">' + active + ' active · ' + completed + ' completed</div>' +
-          '</div>';
+          totalInCourse = courseEnrollments.length;
+          active = courseEnrollments.filter(function(e) { return e.status === 'active'; }).length;
+          completed = courseEnrollments.filter(function(e) { return e.status === 'completed'; }).length;
         }
+
+        var chevClass = isOpen ? 'course-card-chevron open' : 'course-card-chevron';
+        var headerClass = isOpen ? 'course-card-header open' : 'course-card-header';
+
+        html += '<div class="course-card" data-course-id="' + escapeHtml(course.courseId) + '">' +
+          '<div class="' + headerClass + '" onclick="toggleCourseAccordion(\'' + escapeHtml(course.courseId) + '\')">' +
+            '<div class="course-card-icon ' + courseBgs[iconIdx] + '">' + courseColors[iconIdx] + '</div>' +
+            '<div class="course-card-info">' +
+              '<div class="course-card-title">' + escapeHtml(course.title) + '</div>' +
+              '<div class="course-card-meta">' + active + ' active · ' + completed + ' completed</div>' +
+            '</div>' +
+            '<div class="course-card-stat">' +
+              '<div class="course-card-stat-value">' + totalInCourse + '</div>' +
+              '<div class="course-card-stat-label">enrolled</div>' +
+            '</div>' +
+            '<svg class="' + chevClass + '" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>' +
+          '</div>' +
+          '<div class="course-card-body' + (isOpen ? ' open' : '') + '">' +
+            renderCourseDetailPanel(course.courseId) +
+          '</div>' +
+        '</div>';
       });
 
       container.innerHTML = html;
+    }
+
+    /**
+     * toggleCourseAccordion(courseId)
+     * Opens/closes a course accordion card. Only one open at a time.
+     */
+    function toggleCourseAccordion(courseId) {
+      if (_expandedCourse === courseId) {
+        _expandedCourse = null;
+      } else {
+        _expandedCourse = courseId;
+      }
+      // Re-render enrollment stats (preserves other state)
+      updateEnrollmentStats(_cachedEnrollments, _cachedCourses);
+    }
+
+    /**
+     * renderCourseDetailPanel(courseId)
+     * Returns HTML showing the enrolled students for a given course.
+     * Each row shows student name, status, and progress bar.
+     */
+    function renderCourseDetailPanel(courseId) {
+      // Gather enrolled students
+      var enrolled = _cachedStudents.filter(function(s) {
+        return _cachedEnrollments.some(function(e) {
+          return e.studentId === s.id && e.courseId === courseId;
+        });
+      });
+      // For QA Onboarding, also include legacy students
+      if (courseId === 'qa-onboarding') {
+        _cachedStudents.forEach(function(s) {
+          if (!enrolled.some(function(e) { return e.id === s.id; })) {
+            var p = _cachedProgress.find(function(pr) { return pr && pr.studentId === s.id; });
+            if (p && ((p.lessonsComplete && p.lessonsComplete.length > 0) || p.certificateEarned)) {
+              enrolled.push(s);
+            }
+          }
+        });
+      }
+
+      if (enrolled.length === 0) {
+        return '<div class="course-detail-empty">No students enrolled yet</div>';
+      }
+
+      var rows = '';
+      enrolled.forEach(function(student) {
+        var progress = _cachedProgress.find(function(p) { return p && p.studentId === student.id; });
+        var pct = calcProgress(progress, courseId);
+        var pctClass = pct >= 100 ? 'complete' : (pct > 0 ? 'started' : '');
+        // Find enrollment status
+        var enrollment = _cachedEnrollments.find(function(e) {
+          return e.studentId === student.id && e.courseId === courseId;
+        });
+        var status = (enrollment && enrollment.status) || (pct >= 100 ? 'completed' : 'active');
+        rows += '<tr>' +
+          '<td><strong>' + escapeHtml(student.name || '') + '</strong></td>' +
+          '<td>' + escapeHtml(student.caseId || '') + '</td>' +
+          '<td>' +
+            '<div class="course-detail-progress">' +
+              '<div class="course-detail-progress-bar">' +
+                '<div class="course-detail-progress-fill ' + pctClass + '" style="width:' + pct + '%;"></div>' +
+              '</div>' +
+              '<span>' + pct + '%</span>' +
+            '</div>' +
+          '</td>' +
+          '<td><span class="badge ' + (status === 'completed' ? 'badge-success' : 'badge-primary') + '">' + status + '</span></td>' +
+        '</tr>';
+      });
+
+      return '<table class="course-detail-table">' +
+        '<thead><tr>' +
+          '<th>Student</th>' +
+          '<th>Case ID</th>' +
+          '<th>Progress</th>' +
+          '<th>Status</th>' +
+        '</tr></thead>' +
+        '<tbody>' + rows + '</tbody></table>';
     }
 
     /**
@@ -4510,7 +4833,10 @@
             '<p style="font-size:var(--text-xs);color:var(--color-ink-muted);margin:0;">' +
               'Generate a setup file to email to this student. They upload it on the login screen to set up their account instantly.' +
             '</p>' +
-            '<div style="display:flex;justify-content:flex-end;gap:var(--space-3);">' +
+            '<div style="display:flex;justify-content:flex-end;gap:var(--space-3);flex-wrap:wrap;">' +
+              '<button class="btn btn-secondary" onclick="resetAddStudentForm();document.getElementById(\'student-name\').focus();">' +
+                '➕ Add Another' +
+              '</button>' +
               '<button class="btn btn-ghost" onclick="closeAddStudentModal();loadStudentList();">Done</button>' +
               '<button class="btn btn-primary" onclick="generateSetupFile(\'' + caseId + '\');closeAddStudentModal();loadStudentList();">' +
                 '📥 Generate Setup File' +
