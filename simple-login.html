@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QA Pilot — Team Login</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #f0f4f9 0%, #e2e8f0 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #e2e6f0;
+      border-radius: 16px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+    }
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #2563eb;
+      color: #fff;
+      border-radius: 8px;
+      padding: 4px 12px;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    h1 { font-size: 22px; margin-bottom: 4px; }
+    .sub { font-size: 14px; color: #6b7280; margin-bottom: 28px; }
+
+    /* Upload area */
+    .upload-zone {
+      border: 2px dashed #d1d5db;
+      border-radius: 12px;
+      padding: 28px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #fafbfc;
+      margin-bottom: 20px;
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: #2563eb;
+      background: #eff6ff;
+    }
+    .upload-zone.has-file {
+      border-color: #16a34a;
+      background: #f0fdf4;
+    }
+    .upload-icon { font-size: 36px; margin-bottom: 8px; }
+    .upload-text { font-size: 14px; color: #374151; font-weight: 600; }
+    .upload-hint { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+    .upload-file-name { font-size: 13px; color: #16a34a; font-weight: 600; margin-top: 8px; }
+    .upload-error { font-size: 13px; color: #dc2626; margin-top: 8px; display: none; }
+
+    /* Name field */
+    .name-section { margin-bottom: 20px; }
+    .name-section label {
+      font-size: 13px; font-weight: 600; color: #374151;
+      display: block; margin-bottom: 6px;
+    }
+    .name-input {
+      width: 100%;
+      border: 2px solid #e2e6f0;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 16px;
+      transition: border-color 0.2s;
+    }
+    .name-input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+
+    /* Name suggestions dropdown */
+    .name-suggestions {
+      border: 1px solid #e2e6f0;
+      border-radius: 8px;
+      max-height: 180px;
+      overflow-y: auto;
+      display: none;
+      margin-top: 4px;
+    }
+    .name-suggestions.show { display: block; }
+    .name-suggestion-item {
+      padding: 10px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      border-bottom: 1px solid #f3f4f6;
+      transition: background 0.15s;
+    }
+    .name-suggestion-item:last-child { border-bottom: none; }
+    .name-suggestion-item:hover, .name-suggestion-item.active {
+      background: #eff6ff;
+      color: #2563eb;
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .login-btn:hover { background: #1d4ed8; box-shadow: 0 4px 16px rgba(37,99,235,0.3); }
+    .login-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+
+    .status {
+      font-size: 13px;
+      margin-top: 12px;
+      text-align: center;
+      display: none;
+    }
+    .status.error { color: #dc2626; display: block; }
+    .status.success { color: #16a34a; display: block; }
+    .status.info { color: #2563eb; display: block; }
+
+    .hidden-input { display: none; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">QA Pilot</div>
+  <h1>Team Login</h1>
+  <p class="sub">Upload your class file and enter your name to get started.</p>
+
+  <!-- Upload Zone -->
+  <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+    <div class="upload-icon">📁</div>
+    <div class="upload-text">Upload Class File</div>
+    <div class="upload-hint">Click to select the .json file your trainer sent you</div>
+    <div class="upload-file-name" id="file-name"></div>
+    <div class="upload-error" id="file-error"></div>
+  </div>
+  <input type="file" id="file-input" class="hidden-input" accept=".json" onchange="handleFile(event)">
+
+  <!-- Name -->
+  <div class="name-section">
+    <label for="name-input">Your Name</label>
+    <input type="text" id="name-input" class="name-input" placeholder="Type your name…" autocomplete="off" oninput="onNameInput()">
+    <div class="name-suggestions" id="name-suggestions"></div>
+  </div>
+
+  <button class="login-btn" id="login-btn" disabled onclick="login()">
+    → Login
+  </button>
+
+  <div class="status" id="status"></div>
+</div>
+
+<script src="js/db.js"></script>
+<script src="js/app.js"></script>
+<script data-cfasync="false">
+var _classData = null;
+var _students = [];
+var _selectedStudent = null;
+
+// ── File handling ──
+function handleFile(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var data = JSON.parse(e.target.result);
+      if (!data.students || !Array.isArray(data.students) || data.students.length === 0) {
+        showFileError('This file doesn\'t contain any students. Contact your trainer.');
+        return;
+      }
+      _classData = data;
+      _students = data.students;
+      _selectedStudent = null;
+      document.getElementById('file-name').textContent = '✓ Loaded: ' + file.name + ' (' + _students.length + ' students)';
+      document.getElementById('upload-zone').classList.add('has-file');
+      document.getElementById('file-error').style.display = 'none';
+      document.getElementById('name-input').focus();
+      checkReady();
+    } catch(err) {
+      showFileError('Couldn\'t read this file. Make sure it\'s the .json file from your trainer.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function showFileError(msg) {
+  var err = document.getElementById('file-error');
+  err.textContent = msg;
+  err.style.display = 'block';
+  document.getElementById('upload-zone').classList.remove('has-file');
+  document.getElementById('file-name').textContent = '';
+}
+
+// ── Name entry with suggestions ──
+function onNameInput() {
+  var val = document.getElementById('name-input').value.trim();
+  var suggestions = document.getElementById('name-suggestions');
+
+  if (!val || _students.length === 0) {
+    suggestions.classList.remove('show');
+    suggestions.innerHTML = '';
+    _selectedStudent = null;
+    checkReady();
+    return;
+  }
+
+  var lower = val.toLowerCase();
+  var matches = _students.filter(function(s) {
+    return s.name.toLowerCase().indexOf(lower) !== -1;
+  });
+
+  if (matches.length === 0) {
+    suggestions.classList.remove('show');
+    suggestions.innerHTML = '';
+    _selectedStudent = null;
+    checkReady();
+    return;
+  }
+
+  // Check for exact match
+  var exact = matches.find(function(s) { return s.name.toLowerCase() === lower; });
+  if (exact) {
+    _selectedStudent = exact;
+    suggestions.classList.remove('show');
+    checkReady();
+    return;
+  }
+
+  _selectedStudent = null;
+  var html = '';
+  matches.forEach(function(s) {
+    html += '<div class="name-suggestion-item" onclick="selectSuggestion(\'' + escapeJsStr(s.name) + '\')">' +
+      escapeHtml(s.name) + '</div>';
+  });
+  suggestions.innerHTML = html;
+  suggestions.classList.add('show');
+  checkReady();
+}
+
+function selectSuggestion(name) {
+  document.getElementById('name-input').value = name;
+  document.getElementById('name-suggestions').classList.remove('show');
+  _selectedStudent = _students.find(function(s) { return s.name === name; });
+  checkReady();
+}
+
+function checkReady() {
+  var btn = document.getElementById('login-btn');
+  btn.disabled = !(_classData && _selectedStudent);
+}
+
+// ── Login ──
+async function login() {
+  if (!_classData || !_selectedStudent) return;
+  var btn = document.getElementById('login-btn');
+  var status = document.getElementById('status');
+  btn.disabled = true;
+  btn.textContent = 'Logging in…';
+  status.className = 'status info';
+  status.textContent = 'Setting up your account…';
+
+  try {
+    // The simple class file doesn't include passwords — use a dummy
+    var dummyHash = 'simple:no-password-required';
+    var student = _selectedStudent;
+    var courseIds = _classData.courseIds || [];
+
+    // Ensure DB is ready
+    await initDB();
+
+    // Check if student already exists
+    var existing = null;
+    if (student.email) {
+      existing = await findStudentByEmail(student.email);
+    }
+
+    if (existing) {
+      status.textContent = 'Welcome back! Signing you in…';
+      startSession(existing);
+      window.location.href = 'portal.html';
+      return;
+    }
+
+    // Generate caseId if not in file (for simple v2 files that have them)
+    var caseId = student.caseId || await generateNextCaseId();
+
+    // Create student record
+    var today = new Date().toISOString().split('T')[0];
+    var studentRecord = {
+      caseId:      caseId,
+      name:        student.name,
+      email:       student.email || (student.name.toLowerCase().replace(/\s+/g, '.') + '@student.local'),
+      password:    dummyHash,
+      role:        student.role || 'junior',
+      cohort:      _classData.cohort || '',
+      dateCreated: today,
+      active:      true,
+    };
+
+    await saveStudent(studentRecord);
+
+    // Enroll in courses
+    for (var i = 0; i < courseIds.length; i++) {
+      await enrollStudent(caseId, courseIds[i]);
+    }
+
+    // Save org settings if provided
+    if (_classData.orgName)         await saveSetting('orgName', _classData.orgName);
+    if (_classData.instructorEmail) await saveSetting('instructorEmail', _classData.instructorEmail);
+
+    status.textContent = '✓ Account created! Taking you to your courses…';
+    startSession(studentRecord);
+    window.location.href = 'portal.html';
+
+  } catch(err) {
+    console.error('Simple login failed:', err);
+    status.className = 'status error';
+    status.textContent = 'Something went wrong. Try again or contact your trainer.';
+    btn.disabled = false;
+    btn.textContent = '→ Login';
+  }
+}
+
+// ── Utilities ──
+function escapeHtml(text) {
+  var d = document.createElement('div');
+  d.appendChild(document.createTextNode(text));
+  return d.innerHTML;
+}
+function escapeJsStr(s) {
+  return (s || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+// ── Bootstrap ──
+initDB().catch(function(e) {
+  console.error('DB init failed:', e);
+  document.getElementById('status').className = 'status error';
+  document.getElementById('status').textContent = 'Could not initialize. Try opening via a local server (not file://).';
+});
+</script>
+</body>
+</html>

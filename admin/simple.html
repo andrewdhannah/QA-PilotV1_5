@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QA Pilot — Trainer Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f4f9;
+      color: #1a1f2e;
+      padding: 32px 24px 80px;
+    }
+    .wrap { max-width: 800px; margin: 0 auto; }
+
+    h1 { font-size: 24px; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
+    .sub { color: #6b7280; font-size: 14px; margin-bottom: 28px; }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e2e6f0;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #6b7280;
+      margin-bottom: 16px;
+    }
+
+    textarea {
+      width: 100%;
+      border: 2px solid #e2e6f0;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 14px;
+      font-family: 'SF Mono', 'Menlo', monospace;
+      resize: vertical;
+      min-height: 120px;
+      transition: border-color 0.2s;
+    }
+    textarea:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+
+    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary { background: #2563eb; color: #fff; }
+    .btn-primary:hover { background: #1d4ed8; box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
+    .btn-success { background: #16a34a; color: #fff; }
+    .btn-success:hover { background: #15803d; box-shadow: 0 4px 12px rgba(22,163,74,0.3); }
+    .btn-danger { background: #dc2626; color: #fff; }
+    .btn-danger:hover { background: #b91c1c; box-shadow: 0 4px 12px rgba(220,38,38,0.3); }
+    .btn-ghost { background: #f3f4f6; color: #374151; }
+    .btn-ghost:hover { background: #e5e7eb; }
+    .btn-lg { padding: 14px 32px; font-size: 16px; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-blue { background: #eff6ff; color: #2563eb; }
+    .badge-green { background: #f0fdf4; color: #16a34a; }
+    .badge-red { background: #fef2f2; color: #dc2626; }
+
+    .student-list { margin-top: 12px; }
+    .student-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid #f3f4f6;
+      font-size: 14px;
+    }
+    .student-row:last-child { border-bottom: none; }
+
+    .course-checkboxes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .course-checkboxes label {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px; cursor: pointer;
+      padding: 6px 12px; border-radius: 8px;
+      background: #f9fafb; border: 1px solid #e5e7eb;
+      transition: all 0.2s;
+    }
+    .course-checkboxes label:hover { border-color: #2563eb; background: #eff6ff; }
+    .course-checkboxes input:checked + span { color: #2563eb; font-weight: 600; }
+    .course-checkboxes input { accent-color: #2563eb; }
+
+    .instructions ol {
+      margin: 8px 0 0 20px;
+      font-size: 14px;
+      line-height: 2;
+      color: #374151;
+    }
+    .instructions li strong { color: #2563eb; }
+    .instructions .file-name {
+      background: #f3f4f6;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 13px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      animation: fadeIn 0.3s ease;
+      z-index: 999;
+    }
+    .toast.success { background: #16a34a; }
+    .toast.error { background: #dc2626; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .overlay.open { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: 12px;
+      padding: 28px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+    }
+    .modal p { font-size: 14px; color: #6b7280; margin: 12px 0 20px; }
+    .modal .btns { display: flex; gap: 10px; justify-content: center; }
+
+    .empty-state { color: #9ca3af; font-size: 14px; text-align: center; padding: 20px 0; }
+
+    select, input[type="text"] {
+      border: 2px solid #e2e6f0;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+    select:focus, input[type="text"]:focus { outline: none; border-color: #2563eb; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>
+    <span style="background:#2563eb;color:#fff;border-radius:8px;padding:4px 10px;font-size:14px;">QA Pilot</span>
+    Trainer Dashboard
+  </h1>
+  <p class="sub">Add students, generate class files, and manage your cohort.</p>
+
+  <!-- ── STEP 1: ADD STUDENTS ── -->
+  <div class="card">
+    <div class="card-title">1. Add Students</div>
+    <p style="font-size:13px;color:#6b7280;margin-bottom:10px;">
+      Paste one student per line. Format: <strong>Name, email</strong> (email is optional).
+    </p>
+    <textarea id="student-input" placeholder="Alice Smith, alice@example.com&#10;Bob Jones, bob@example.com&#10;Charlie Lee"></textarea>
+
+    <div style="margin-top:14px;">
+      <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:6px;">Default password for all students:</div>
+      <input type="text" id="default-password" value="qapilot123" style="width:200px;">
+    </div>
+
+    <div style="margin-top:14px;">
+      <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:6px;">Role:</div>
+      <select id="student-role" style="width:160px;">
+        <option value="junior">Junior QA</option>
+        <option value="senior">Senior QA</option>
+      </select>
+    </div>
+
+    <div style="margin-top:14px;">
+      <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:6px;">Courses to enroll them in:</div>
+      <div class="course-checkboxes" id="course-list"></div>
+    </div>
+
+    <div class="row">
+      <button class="btn btn-primary" onclick="addStudents()">➕ Add Students</button>
+      <span id="student-count" style="font-size:13px;color:#9ca3af;"></span>
+    </div>
+
+    <div class="student-list" id="student-entries"></div>
+  </div>
+
+  <!-- ── STEP 2: DOWNLOAD CLASS FILE ── -->
+  <div class="card" style="border:2px solid #2563eb;background:#f8faff;">
+    <div class="card-title" style="color:#2563eb;">2. Download Class File</div>
+    <p style="font-size:14px;color:#374151;margin-bottom:16px;">
+      You've added <strong id="download-count">0</strong> student(s). Generate a single file they'll use to log in.
+    </p>
+    <button class="btn btn-success btn-lg" onclick="downloadClassFile()" id="download-btn" disabled>
+      ⬇ Download Class File
+    </button>
+  </div>
+
+  <!-- ── STEP 3: INSTRUCTIONS ── -->
+  <div class="card instructions">
+    <div class="card-title">3. What to do with this file</div>
+    <ol>
+      <li><strong>Send</strong> the downloaded <span class="file-name">.json</span> file to your students (email, Teams, shared drive).</li>
+      <li>Your team opens <strong>simple-login.html</strong> — they <strong>upload the file</strong>, type their <strong>name</strong>, and click <strong>Login</strong>.</li>
+      <li>No passwords, no email needed on their end. The file links them to their account.</li>
+      <li>Once logged in, they'll see their courses and can start training immediately.</li>
+      <li>When they finish, they can export their progress and send it back to you.</li>
+    </ol>
+  </div>
+
+  <!-- ── CLEAR ALL DATA ── -->
+  <div class="card" style="border-color:#fecaca;">
+    <div class="card-title" style="color:#dc2626;">Clear All Data</div>
+    <p style="font-size:13px;color:#6b7280;margin-bottom:12px;">
+      This will delete ALL students, progress, and enrollments from the local database.
+      Only do this if you want to start fresh.
+    </p>
+    <button class="btn btn-danger" onclick="confirmClear()">🗑 Clear All Student Data</button>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="overlay" id="confirm-modal">
+  <div class="modal">
+    <h3 style="font-size:18px;color:#dc2626;">Clear All Data?</h3>
+    <p>This cannot be undone. All students, progress records, and enrollments will be permanently deleted.</p>
+    <div class="btns">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="clearAllData()">Yes, Clear Everything</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/db.js"></script>
+<script data-cfasync="false">
+// ── Course list (hardcoded subset of active courses) ──
+var ACTIVE_COURSES = [
+  { id: 'qa-onboarding', title: 'QA Onboarding Training' },
+  { id: 'qa-onboarding-advanced', title: 'QA Onboarding — Advanced' },
+  { id: 'capstone-1', title: 'Capstone 1: QA Investigation' },
+  { id: 'capstone-2', title: 'Advanced Capstone 2' },
+  { id: 'dynamics-crm-basics', title: 'Introduction to Dynamics CRM' },
+  { id: 'acceptance-criteria-basics', title: 'Acceptance Criteria Fundamentals' },
+  { id: 'teams-for-qa', title: 'Microsoft Teams for QA' },
+  { id: 'scenario-deep-dive', title: 'Scenario Deep Dive — Customer Portal' },
+];
+
+var _addedStudents = [];
+
+/** Render course checkboxes */
+function renderCourses() {
+  var html = '';
+  ACTIVE_COURSES.forEach(function(c, i) {
+    html += '<label><input type="checkbox" value="' + c.id + '"' + (i === 0 ? ' checked' : '') + '>' +
+      '<span>' + c.title + '</span></label>';
+  });
+  document.getElementById('course-list').innerHTML = html;
+}
+
+/** Parse textarea, create students, add to list */
+async function addStudents() {
+  var raw = document.getElementById('student-input').value.trim();
+  if (!raw) { showToast('Paste at least one student name.', 'error'); return; }
+
+  var lines = raw.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l; });
+  var password = document.getElementById('default-password').value.trim() || 'qapilot123';
+  var role = document.getElementById('student-role').value;
+
+  // Get checked courses
+  var courseIds = [];
+  document.querySelectorAll('#course-list input:checked').forEach(function(cb) {
+    courseIds.push(cb.value);
+  });
+  if (courseIds.length === 0) { showToast('Select at least one course.', 'error'); return; }
+
+  var added = 0;
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+    // Parse "Name, email" or just "Name"
+    var parts = line.split(',').map(function(s) { return s.trim(); });
+    var name = parts[0];
+    var email = parts.length > 1 ? parts[1] : (name.toLowerCase().replace(/\s+/g, '.') + '@student.local');
+
+    // Generate a simple caseId
+    var caseNum = 10000 + _addedStudents.length + 1;
+    var caseId = 'CASE-' + String(caseNum).padStart(5, '0');
+
+    _addedStudents.push({
+      caseId: caseId,
+      name: name,
+      email: email,
+      password: password,
+      role: role,
+      courseIds: courseIds.slice(),
+    });
+    added++;
+  }
+
+  document.getElementById('student-input').value = '';
+  renderStudentList();
+  updateDownloadBtn();
+  showToast('Added ' + added + ' student(s).', 'success');
+}
+
+function renderStudentList() {
+  var container = document.getElementById('student-entries');
+  if (_addedStudents.length === 0) {
+    container.innerHTML = '<div class="empty-state">No students added yet.</div>';
+    return;
+  }
+  var html = '';
+  _addedStudents.forEach(function(s, idx) {
+    html += '<div class="student-row">' +
+      '<span class="badge badge-blue">' + s.caseId + '</span>' +
+      '<strong>' + escapeHtml(s.name) + '</strong>' +
+      '<span style="color:#9ca3af;font-size:13px;">' + escapeHtml(s.email) + '</span>' +
+      '<span style="margin-left:auto;font-size:12px;color:#6b7280;">' + s.role + '</span>' +
+      '<button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;" onclick="removeStudent(' + idx + ')">✕</button>' +
+    '</div>';
+  });
+  container.innerHTML = html;
+  document.getElementById('student-count').textContent = _addedStudents.length + ' student' + (_addedStudents.length !== 1 ? 's' : '') + ' in list';
+}
+
+function removeStudent(idx) {
+  _addedStudents.splice(idx, 1);
+  renderStudentList();
+  updateDownloadBtn();
+}
+
+function updateDownloadBtn() {
+  var btn = document.getElementById('download-btn');
+  var count = document.getElementById('download-count');
+  count.textContent = _addedStudents.length;
+  btn.disabled = _addedStudents.length === 0;
+}
+
+/** Generate and download class file */
+function downloadClassFile() {
+  if (_addedStudents.length === 0) { showToast('Add at least one student first.', 'error'); return; }
+
+  var students = _addedStudents.map(function(s) {
+    return {
+      caseId: s.caseId,
+      name: s.name,
+      email: s.email,
+      role: s.role,
+    };
+  });
+
+  // Use the course IDs from the first student (they all have same courses)
+  var courseIds = _addedStudents[0].courseIds;
+
+  var payload = {
+    setupVersion: '2.0-simple',
+    generatedDate: new Date().toISOString(),
+    students: students,
+    courseIds: courseIds,
+  };
+
+  var label = 'cohort';
+  var date = new Date().toISOString().split('T')[0];
+  var fileName = 'qa-pilot-class-' + label + '-' + date + '.json';
+  var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+
+  showToast('✓ Downloaded: ' + fileName + ' (' + _addedStudents.length + ' students)', 'success');
+}
+
+/** Clear all IndexedDB data */
+async function clearAllData() {
+  closeModal();
+  try {
+    // Delete the database entirely
+    var req = indexedDB.deleteDatabase('qa_onboarding_db');
+    req.onsuccess = function() {
+      _addedStudents = [];
+      renderStudentList();
+      updateDownloadBtn();
+      document.getElementById('student-input').value = '';
+      showToast('✓ All data cleared. Refresh the page to start fresh.', 'success');
+    };
+    req.onerror = function() {
+      showToast('Error clearing database.', 'error');
+    };
+    req.onblocked = function() {
+      showToast('Close other tabs first, then try again.', 'error');
+    };
+  } catch(e) {
+    console.error('clearAllData failed:', e);
+    showToast('Failed to clear data.', 'error');
+  }
+}
+
+function confirmClear() {
+  document.getElementById('confirm-modal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('confirm-modal').classList.remove('open');
+}
+
+function showToast(msg, type) {
+  var t = document.createElement('div');
+  t.className = 'toast ' + (type || 'success');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function() { t.remove(); }, 3500);
+}
+
+function escapeHtml(text) {
+  var d = document.createElement('div');
+  d.appendChild(document.createTextNode(text));
+  return d.innerHTML;
+}
+
+// ── Bootstrap ──
+renderCourses();
+renderStudentList();
+updateDownloadBtn();
+</script>
+</body>
+</html>
