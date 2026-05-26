@@ -251,6 +251,62 @@
     .btn-download:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(22,163,74,0.4); }
     .btn-download:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
 
+    .unlock-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin: var(--space-3) 0;
+    }
+    .unlock-row input {
+      flex: 1;
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 8px 12px;
+      font-size: var(--text-sm);
+      font-family: 'SF Mono', 'Menlo', monospace;
+      letter-spacing: 0.08em;
+      transition: border-color 0.2s;
+    }
+    .unlock-row input:focus {
+      outline: none;
+      border-color: var(--color-primary);
+    }
+    .btn-gen {
+      padding: 8px 14px;
+      background: #f3f4f6;
+      border: 2px solid #d1d5db;
+      border-radius: var(--radius-md);
+      font-size: var(--text-xs);
+      font-weight: var(--weight-bold);
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-gen:hover { background: #e5e7eb; border-color: #9ca3af; }
+    .unlock-hint {
+      font-size: 11px;
+      color: var(--color-ink-muted);
+      margin-top: 2px;
+    }
+
+    .btn-email {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: var(--text-sm);
+      font-weight: var(--weight-bold);
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: var(--space-2);
+    }
+    .btn-email:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(37,99,235,0.3); }
+    .btn-email:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
     .instructions ol {
       margin: var(--space-3) 0 0 var(--space-5);
       font-size: var(--text-sm);
@@ -375,22 +431,43 @@
 
     <!-- STEP 2 -->
     <div class="card download-card">
-      <div class="card-title">2. Download Class File</div>
-      <p style="font-size:var(--text-sm);color:var(--color-ink-soft);margin-bottom:var(--space-4);">
+      <div class="card-title">2. Protect &amp; Download Class File</div>
+      <p style="font-size:var(--text-sm);color:var(--color-ink-soft);margin-bottom:var(--space-3);">
         You've added <strong id="download-count" style="color:var(--color-primary);">0</strong> student(s).
       </p>
-      <button class="btn-download" id="download-btn" disabled onclick="downloadClassFile()">
-        ⬇ Download Class File
-      </button>
+
+      <div style="margin-bottom:var(--space-3);">
+        <label style="display:flex;align-items:center;gap:8px;font-size:var(--text-sm);font-weight:var(--weight-bold);color:var(--color-ink);cursor:pointer;margin-bottom:8px;">
+          <input type="checkbox" id="enable-unlock" onchange="toggleUnlockField()">
+          🔒 Require unlock code to open the file
+        </label>
+        <div id="unlock-fields" style="display:none;">
+          <div class="unlock-row">
+            <input type="text" id="unlock-code" placeholder="e.g. Elyse2026">
+            <button type="button" class="btn-gen" onclick="generateUnlockCode()">🎲 Generate</button>
+          </div>
+          <div class="unlock-hint">Students will need this code to use the file. Share it separately (e.g. via Teams or email).</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:var(--space-3);flex-wrap:wrap;align-items:center;">
+        <button class="btn-download" id="download-btn" disabled onclick="downloadClassFile()">
+          ⬇ Download Class File
+        </button>
+        <button class="btn-email" id="email-btn" disabled onclick="emailStudents()">
+          📧 Email to Students
+        </button>
+      </div>
     </div>
 
     <!-- STEP 3 -->
     <div class="card instructions">
-      <div class="card-title">3. What's Next</div>
+      <div class="card-title">3. Share with Your Team</div>
       <ol>
         <li><strong>Send</strong> the downloaded <span class="file-code">.json</span> file to your students (email, Teams, shared drive).</li>
-        <li>Your team goes to <strong>simple-login.html</strong> — they <strong>upload the file</strong>, type their <strong>name</strong>, and click <strong>Login</strong>.</li>
-        <li>No passwords needed on their end. The file links them to their account automatically.</li>
+        <li>If you set an <strong>unlock code</strong>, share it separately — send it in the same email, a Teams message, or however you coordinate.</li>
+        <li>Your team goes to <strong>simple-login.html</strong> — they <strong>upload the file</strong>, enter the <strong>unlock code</strong> (if required), type their <strong>name</strong>, and click <strong>Login</strong>.</li>
+        <li>No passwords needed on their end. The file + unlock code links them to their account.</li>
         <li>Once logged in, they'll see their courses and can start training immediately.</li>
         <li>When they finish, they can export their progress and send it back to you for review.</li>
       </ol>
@@ -504,32 +581,6 @@ function updateDownloadBtn() {
   btn.disabled = _addedStudents.length === 0;
 }
 
-function downloadClassFile() {
-  if (_addedStudents.length === 0) { showToast('Add at least one student first.', 'error'); return; }
-
-  var students = _addedStudents.map(function(s) {
-    return { caseId: s.caseId, name: s.name, email: s.email, role: s.role };
-  });
-  var courseIds = _addedStudents[0].courseIds;
-  var payload = {
-    setupVersion: '2.0-simple',
-    generatedDate: new Date().toISOString(),
-    students: students,
-    courseIds: courseIds,
-  };
-
-  var date = new Date().toISOString().split('T')[0];
-  var fileName = 'qa-pilot-class-cohort-' + date + '.json';
-  var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  var url = URL.createObjectURL(blob);
-  var link = document.createElement('a');
-  link.href = url; link.download = fileName;
-  document.body.appendChild(link); link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-  showToast('✓ Downloaded ' + fileName + ' (' + _addedStudents.length + ' students)', 'success');
-}
-
 async function clearAllData() {
   closeModal();
   try {
@@ -561,6 +612,138 @@ function escapeHtml(text) {
   var d = document.createElement('div');
   d.appendChild(document.createTextNode(text));
   return d.innerHTML;
+}
+
+/* ── UNLOCK CODE ─────────────────────────────────────── */
+
+function toggleUnlockField() {
+  var enabled = document.getElementById('enable-unlock').checked;
+  document.getElementById('unlock-fields').style.display = enabled ? '' : 'none';
+  if (enabled && !document.getElementById('unlock-code').value.trim()) {
+    generateUnlockCode();
+  }
+}
+
+function generateUnlockCode() {
+  var words = ['Sunset', 'Bluebird', 'Tuna', 'Falcon', 'Maple', 'Raven', 'Copper', 'Willow',
+               'Pixel', 'Anchor', 'Tempo', 'Coral', 'Ember', 'Pivot', 'Apex', 'Lunar'];
+  var word1 = words[Math.floor(Math.random() * words.length)];
+  var word2 = words[Math.floor(Math.random() * words.length)];
+  var num = Math.floor(Math.random() * 99) + 10;
+  document.getElementById('unlock-code').value = word1 + '-' + word2 + '-' + num;
+}
+
+/* ── SHA-256 (pure JS, works everywhere) ─────────────── */
+
+function sha256(s) {
+  var chrsz = 8, hexcase = 0;
+  function safe_add(x, y) { var lsw = (x & 0xFFFF) + (y & 0xFFFF); return (x >> 16) + (y >> 16) + (lsw >> 16) << 16 | lsw & 0xFFFF; }
+  function S(X, n) { return X >>> n | X << (32 - n); }
+  function R(X, n) { return X >>> n; }
+  function Ch(x, y, z) { return x & y ^ ~x & z; }
+  function Maj(x, y, z) { return x & y ^ x & z ^ y & z; }
+  function Sigma0256(x) { return S(x, 2) ^ S(x, 13) ^ S(x, 22); }
+  function Sigma1256(x) { return S(x, 6) ^ S(x, 11) ^ S(x, 25); }
+  function Gamma0256(x) { return S(x, 7) ^ S(x, 18) ^ R(x, 3); }
+  function Gamma1256(x) { return S(x, 17) ^ S(x, 19) ^ R(x, 10); }
+  function core_sha256(m, l) {
+    var K = [0x428A2F98,0x71374491,0xB5C0FBCF,0xE9B5DBA5,0x3956C25B,0x59F111F1,0x923F82A4,0xAB1C5ED5,0xD807AA98,0x12835B01,0x243185BE,0x550C7DC3,0x72BE5D74,0x80DEB1FE,0x9BDC06A7,0xC19BF174,0xE49B69C1,0xEFBE4786,0xFC19DC6,0x240CA1CC,0x2DE92C6F,0x4A7484AA,0x5CB0A9DC,0x76F988DA,0x983E5152,0xA831C66D,0xB00327C8,0xBF597FC7,0xC6E00BF3,0xD5A79147,0x6CA6351,0x14292967,0x27B70A85,0x2E1B2138,0x4D2C6DFC,0x53380D13,0x650A7354,0x766A0ABB,0x81C2C92E,0x92722C85,0xA2BFE8A1,0xA81A664B,0xC24B8B70,0xC76C51A3,0xD192E819,0xD6990624,0xF40E3585,0x106AA070,0x19A4C116,0x1E376C08,0x2748774C,0x34B0BCB5,0x391C0CB3,0x4ED8AA4A,0x5B9CCA4F,0x682E6FF3,0x748F82EE,0x78A5636F,0x84C87814,0x8CC70208,0x90BEFFFA,0xA4506CEB,0xBEF9A3F7,0xC67178F2];
+    var H = [0x6A09E667,0xBB67AE85,0x3C6EF372,0xA54FF53A,0x510E527F,0x9B05688C,0x1F83D9AB,0x5BE0CD19];
+    var W = new Array(64), a, b, c, d, e, f, g, h, i, j, T1, T2;
+    m[l >> 5] |= 0x80 << (24 - l % 32); m[((l + 64 >> 9) << 4) + 15] = l;
+    for (i = 0; i < m.length; i += 16) {
+      a = H[0]; b = H[1]; c = H[2]; d = H[3]; e = H[4]; f = H[5]; g = H[6]; h = H[7];
+      for (j = 0; j < 64; j++) {
+        if (j < 16) W[j] = m[j + i]; else W[j] = safe_add(safe_add(safe_add(Gamma1256(W[j - 2]), W[j - 7]), Gamma0256(W[j - 15])), W[j - 16]);
+        T1 = safe_add(safe_add(safe_add(safe_add(h, Sigma1256(e)), Ch(e, f, g)), K[j]), W[j]);
+        T2 = safe_add(Sigma0256(a), Maj(a, b, c));
+        h = g; g = f; f = e; e = safe_add(d, T1); d = c; c = b; b = a; a = safe_add(T1, T2);
+      }
+      H[0] = safe_add(a, H[0]); H[1] = safe_add(b, H[1]); H[2] = safe_add(c, H[2]); H[3] = safe_add(d, H[3]);
+      H[4] = safe_add(e, H[4]); H[5] = safe_add(f, H[5]); H[6] = safe_add(g, H[6]); H[7] = safe_add(h, H[7]);
+    }
+    return H;
+  }
+  function str2binb(str) { var bin = [], mask = (1 << chrsz) - 1, i; for (i = 0; i < str.length * chrsz; i += chrsz) bin[i >> 5] |= (str.charCodeAt(i / chrsz) & mask) << (24 - i % 32); return bin; }
+  function binb2hex(binarray) { var hex_tab = hexcase ? '0123456789ABCDEF' : '0123456789abcdef', str = '', i; for (i = 0; i < binarray.length * 4; i++) str += hex_tab.charAt(binarray[i >> 2] >> (3 - i % 4) * 8 + 4 & 0xF) + hex_tab.charAt(binarray[i >> 2] >> (3 - i % 4) * 8 & 0xF); return str; }
+  return binb2hex(core_sha256(str2binb(s), s.length * chrsz));
+}
+
+/* ── DOWNLOAD CLASS FILE ─────────────────────────────── */
+
+function downloadClassFile() {
+  if (_addedStudents.length === 0) { showToast('Add at least one student first.', 'error'); return; }
+
+  var students = _addedStudents.map(function(s) {
+    return { caseId: s.caseId, name: s.name, email: s.email, role: s.role };
+  });
+  var courseIds = _addedStudents[0].courseIds;
+  var payload = {
+    setupVersion: '2.0-simple',
+    generatedDate: new Date().toISOString(),
+    students: students,
+    courseIds: courseIds,
+  };
+
+  // Add passphrase hash if unlock code is enabled
+  if (document.getElementById('enable-unlock').checked) {
+    var code = document.getElementById('unlock-code').value.trim();
+    if (code) {
+      payload.passphraseHash = sha256(code.toLowerCase().trim());
+    }
+  }
+
+  var date = new Date().toISOString().split('T')[0];
+  var fileName = 'qa-pilot-class-cohort-' + date + '.json';
+  var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var link = document.createElement('a');
+  link.href = url; link.download = fileName;
+  document.body.appendChild(link); link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+  showToast('✓ Downloaded ' + fileName + ' (' + _addedStudents.length + ' students)', 'success');
+}
+
+/* ── EMAIL STUDENTS ──────────────────────────────────── */
+
+function emailStudents() {
+  if (_addedStudents.length === 0) { showToast('Add at least one student first.', 'error'); return; }
+
+  var emails = _addedStudents.map(function(s) { return s.email; }).filter(function(e) { return e; });
+  if (emails.length === 0) {
+    showToast('No student emails to send to. Add email addresses when pasting student names.', 'error');
+    return;
+  }
+
+  var hasCode = document.getElementById('enable-unlock').checked;
+  var code = document.getElementById('unlock-code').value.trim();
+
+  var subject = encodeURIComponent('QA Pilot Academy — Your Class File');
+  var body = encodeURIComponent(
+    "Hi team,\n\n" +
+    "Here's your QA Pilot Academy class file to get started.\n\n" +
+    "➡ 1. Open simple-login.html in your browser\n" +
+    "➡ 2. Upload the attached .json file\n" +
+    (hasCode && code ? "➡ 3. Enter the unlock code: " + code + "\n➡ 4. Type your name and click Login\n\n" : "➡ 3. Type your name and click Login\n\n") +
+    "Your account will be created automatically — no password to remember.\n\n" +
+    "Once logged in, you'll see your courses and can start training right away.\n" +
+    "When you finish, use the Export button to send me your progress.\n\n" +
+    "Happy testing!\n— Your Trainer"
+  );
+
+  var mailto = 'mailto:?bcc=' + encodeURIComponent(emails.join(',')) + '&subject=' + subject + '&body=' + body;
+  window.open(mailto);
+  showToast('📧 Email client opened with ' + emails.length + ' recipient(s). Attach the .json file before sending!', 'success');
+}
+
+/* ── UPDATE BUTTONS ──────────────────────────────────── */
+
+function updateDownloadBtn() {
+  var count = _addedStudents.length;
+  document.getElementById('download-count').textContent = count;
+  document.getElementById('download-btn').disabled = count === 0;
+  document.getElementById('email-btn').disabled = count === 0;
 }
 
 renderCourses();
